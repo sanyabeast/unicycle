@@ -117,6 +117,7 @@
 				return;
 			}
 
+			this.loop.prevFrameDate = +new Date();
 			this.started = true;
 
 			this.tick();
