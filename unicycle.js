@@ -29,7 +29,7 @@
 				return +new Date() - this.prevFrameDate;
 			},
 			get relDelta(){
-				return (1000 / 60) / this.absDelta;
+				return this.absDelta / (1000 / 60);
 			}
 		};
 
