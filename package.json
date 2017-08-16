@@ -1,0 +1,19 @@
+{
+    "version": "0.1.0-b",
+    "name": "unicycle",
+    "author": {
+        "name": "Alex Gaivoronski",
+        "email": "a.gvrnsk@gmail.com"
+    },
+    "scripts": {
+        "increase": "node node_modules/vpplus/vpplus.js increase-build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/sanyabeast/unicycle.git"
+    },
+    "dependencies": {
+        "requirejs": "latest",
+        "vpplus": "git://github.com/sanyabeast/vpplus.git"
+    }
+}
