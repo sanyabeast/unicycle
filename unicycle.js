@@ -112,10 +112,17 @@
 
 		},
 		start : function(){
+			if (this.started){
+				return;
+			}
+
+			this.started = true;
+
 			this.tick();
 		},
 		stop : function(){
 			cancelAnimationFrame(this.loop.rafID);
+			this.started = false;
 		}
 	};
 
