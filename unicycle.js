@@ -25,11 +25,12 @@
 			rafID : null,
 			timeoutID : null,
 			prevFrameDate : +new Date(),
+			frameTime : 1000 / 60,
 			get absDelta(){
 				return +new Date() - this.prevFrameDate;
 			},
 			get relDelta(){
-				return this.absDelta / (1000 / 60);
+				return this.absDelta / this.frameTime;
 			}
 		};
 
@@ -104,11 +105,11 @@
 			var absDelta = this.loop.absDelta;
 			var relDelta = this.loop.relDelta;
 
+			this.loop.prevFrameDate = (+new Date());
+
 			for (var k in this.tasks){
 				this.tasks[k](absDelta, relDelta);
-			}
-
-			this.loop.prevFrameDate = (+new Date());
+			}		
 
 		},
 		start : function(){
