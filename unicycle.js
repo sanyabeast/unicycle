@@ -67,11 +67,11 @@
 				root[ prefix + 'CancelRequestAnimationFrame' ];
 			}
 
-			if ( !requestAnimationFrame || !cancelAnimationFrame ) {
+			if (!requestAnimationFrame || !cancelAnimationFrame ) {
 
 				requestAnimationFrame = function( callback ) {
 					var currTime = new Date().getTime();
-					var timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
+					var timeToCall = Math.max( 0, 32 - ( currTime - lastTime ) );
 					var id = root.setTimeout( function() {
 						callback( currTime + timeToCall );
 					}, timeToCall );
@@ -87,6 +87,36 @@
 
 			root.requestAnimationFrame = requestAnimationFrame;
 			root.cancelAnimationFrame = cancelAnimationFrame;
+		}, 
+		usePolyfill : function(){
+			var root;
+
+			if (typeof self == "object" && self.self == self){
+				root = self;
+			} else if (typeof window == "object" && window.window == window){
+				root = window;
+			} else if (typeof global == "object" && global.global == global){
+				root = global;
+			}
+
+			var lastTime = 0;
+
+			this.stop();
+			root.requestAnimationFrame = function( callback ) {
+				var currTime = new Date().getTime();
+				var timeToCall = Math.max( 0, 32 - ( currTime - lastTime ) );
+				var id = root.setTimeout( function() {
+					callback( currTime + timeToCall );
+				}, timeToCall );
+				lastTime = currTime + timeToCall;
+				return id;
+			};
+
+			root.cancelAnimationFrame = function( id ) {
+				root.clearTimeout( id );
+			};
+
+			this.start();
 		},
 		getRandString : function(){
 			return ((Math.random().toString(32).substring(3, 10)) + (Math.random().toString(32).substring(3, 10)));
