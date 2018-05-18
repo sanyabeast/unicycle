@@ -71,17 +71,17 @@
 
 				requestAnimationFrame = function( callback ) {
 					var currTime = new Date().getTime();
-					var timeToCall = Math.max( 0, 32 - ( currTime - lastTime ) );
+					var timeToCall = Math.max( 0, this.polyfillFrameTime - ( currTime - lastTime ) );
 					var id = root.setTimeout( function() {
 						callback( currTime + timeToCall );
 					}, timeToCall );
 					lastTime = currTime + timeToCall;
 					return id;
-				};
+				}.bind(this);
 
 				cancelAnimationFrame = function( id ) {
 					root.clearTimeout( id );
-				};
+				}.bind(this);
 			}
 
 
@@ -104,17 +104,17 @@
 			this.stop();
 			root.requestAnimationFrame = function( callback ) {
 				var currTime = new Date().getTime();
-				var timeToCall = Math.max( 0, 32 - ( currTime - lastTime ) );
+				var timeToCall = Math.max( 0, this.polyfillFrameTime - ( currTime - lastTime ) );
 				var id = root.setTimeout( function() {
 					callback( currTime + timeToCall );
 				}, timeToCall );
 				lastTime = currTime + timeToCall;
 				return id;
-			};
+			}.bind(this);
 
 			root.cancelAnimationFrame = function( id ) {
 				root.clearTimeout( id );
-			};
+			}.bind(this);
 
 			this.start();
 		},
@@ -129,18 +129,25 @@
 		removeTask : function(id){
 			delete this.tasks[id];
 		},
+		polyfillFrameTime : 16,
+		currentFrameTime : 16,
 		tick : function(){
 			this.loop.rafID = requestAnimationFrame(this.tick);
 			
 			var absDelta = this.loop.absDelta;
-			var relDelta = this.loop.relDelta;
+			var relDelta = absDelta / this.loop.frameTime;
 
 			this.loop.prevFrameDate = (+new Date());
+			this.currentFrameTime = absDelta;
 
-			for (var k in this.tasks){
-				this.tasks[k](absDelta, relDelta);
-			}		
-
+			this.loopList(this.tasks, function(task){
+				task(absDelta, relDelta);
+			}, this);
+		},
+		loopList : function(list, cb, context){
+			for (var k in list){
+				cb.call(context, list[k], k, list);
+			}
 		},
 		start : function(){
 			if (this.started){
