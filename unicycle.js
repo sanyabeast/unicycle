@@ -26,6 +26,10 @@
 			timeoutID : null,
 			prevFrameDate : +new Date(),
 			frameTime : 1000 / 60,
+			benchmarkMode: true,
+			framesRendered: 0,
+			framesRenderedLastSecond: 0,
+			fpsTimeline: [],
 			get absDelta(){
 				return +new Date() - this.prevFrameDate;
 			},
@@ -35,6 +39,7 @@
 		};
 
 		this.tick = this.tick.bind(this);
+		this.benchmarkTick = this.benchmarkTick.bind(this);
 
 	};
 
@@ -144,10 +149,74 @@
 				task(absDelta, relDelta);
 			}, this);
 		},
+		benchmarkTick : function(){
+			this.loop.rafID = requestAnimationFrame(this.benchmarkTick);
+			
+			this.loop.framesRendered++;
+
+			var dateSeconds = Math.floor(+new Date() / 1000)
+
+			if (this.loop.prevFpsDate !== dateSeconds){
+				this.loop.prevFpsDate = dateSeconds
+				this.loop.fpsTimeline.push(this.loop.framesRenderedLastSecond)
+				this.loop.framesRenderedLastSecond = 0;
+			} else {
+				this.loop.framesRenderedLastSecond++
+			}
+
+			var absDelta = this.loop.absDelta;
+			var relDelta = absDelta / this.loop.frameTime;
+
+			this.loop.prevFrameDate = (+new Date());
+			this.currentFrameTime = absDelta;
+
+			this.loopList(this.tasks, function(task){
+				task(absDelta, relDelta);
+			}, this);
+		},
 		loopList : function(list, cb, context){
 			for (var k in list){
 				cb.call(context, list[k], k, list);
 			}
+		},
+		startBenchmark (duration, onComplete) {
+			this.stop()
+			this.loop.onBenchmarkComplete = onComplete
+			this.loop.framesRendered = 0;
+			this.loop.framesRenderedLastSecond = 0
+			this.loop.fpsTimeline.length = 0;
+			this.loop.benchmarkMode = true;
+			this.loop.framesRenderedLastSecond = 0
+			this.loop.prevFpsDate = Math.floor(+new Date() / 1000)
+			this.start()
+			setTimeout(function(){
+				this.stopBenchmark()
+			}.bind(this), duration)
+		},
+		stopBenchmark () {
+			this.stop();
+			this.loop.benchmarkMode = false;
+			let averageFPS = 0;
+
+			for (var a = 0, l = this.loop.fpsTimeline.length; a < l; a++){
+				averageFPS += this.loop.fpsTimeline[a]
+			}
+
+			averageFPS /= this.loop.fpsTimeline.length
+			averageFPS = Math.ceil(averageFPS)
+
+			let results = {
+				averageFPS: averageFPS,
+				fpsTimeline: this.loop.fpsTimeline.slice(),
+				framesRendered: this.loop.framesRendered
+			}
+
+			if (this.loop.onBenchmarkComplete){
+				this.loop.onBenchmarkComplete(results)
+			}
+			
+			window.unicycleBenchmarkResults = results
+			this.start()
 		},
 		start : function(){
 			if (this.started){
@@ -157,7 +226,11 @@
 			this.loop.prevFrameDate = +new Date();
 			this.started = true;
 
-			this.tick();
+			if (this.loop.benchmarkMode){
+				this.benchmarkTick();
+			} else {
+				this.tick();
+			}
 		},
 		stop : function(){
 			cancelAnimationFrame(this.loop.rafID);
