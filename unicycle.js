@@ -26,10 +26,11 @@
 			timeoutID : null,
 			prevFrameDate : +new Date(),
 			frameTime : 1000 / 60,
-			benchmarkMode: true,
+			benchmarkMode: false,
 			framesRendered: 0,
 			framesRenderedLastSecond: 0,
 			fpsTimeline: [],
+			frameTimeSum: 16,
 			get absDelta(){
 				return +new Date() - this.prevFrameDate;
 			},
@@ -44,6 +45,9 @@
 	};
 
 	Unicycle.prototype = {
+		get averageFPS () {
+			return 1000 / (this.loop.frameTimeSum / this.loop.framesRendered)
+		},
 		applyRAFPolyfill : function(){
 			var root;
 
@@ -141,6 +145,9 @@
 			
 			var absDelta = this.loop.absDelta;
 			var relDelta = absDelta / this.loop.frameTime;
+
+			this.loop.frameTimeSum += absDelta
+			this.loop.framesRendered++
 
 			this.loop.prevFrameDate = (+new Date());
 			this.currentFrameTime = absDelta;
