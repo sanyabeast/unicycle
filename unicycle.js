@@ -30,7 +30,7 @@
 			framesRendered: 0,
 			framesRenderedLastSecond: 0,
 			fpsTimeline: [],
-			frameTimeSum: 16,
+			frameTimeSum: 0,
 			get absDelta(){
 				return +new Date() - this.prevFrameDate;
 			},
