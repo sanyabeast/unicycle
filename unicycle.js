@@ -27,10 +27,10 @@
 			prevFrameDate : +new Date(),
 			frameTime : 1000 / 60,
 			benchmarkMode: false,
-			framesRendered: 0,
+			framesRendered: 1,
 			framesRenderedLastSecond: 0,
 			fpsTimeline: [],
-			frameTimeSum: 0,
+			frameTimeSum: 16,
 			get absDelta(){
 				return +new Date() - this.prevFrameDate;
 			},
@@ -45,6 +45,10 @@
 	};
 
 	Unicycle.prototype = {
+		resetStats: function () {
+			this.loop.frameTimeSum = 16;
+			this.loop.framesRendered = 1;
+		},	
 		get averageFPS () {
 			return 1000 / (this.loop.frameTimeSum / this.loop.framesRendered)
 		},
